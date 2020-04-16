@@ -1,3 +1,4 @@
+/* tslint:disable:triple-equals one-line */
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {DataTableDirective} from 'angular-datatables';
@@ -31,7 +32,7 @@ export class ChannelListComponent implements OnInit {
   filterType = this.filterTypes[0];
   pageSizes = [25, 50, 100];
   pageSize = this.pageSizes[0];
-  filter: string = '';
+  filter = '';
   private errorMessage: string;
 
   constructor(private http: HttpClient) {}

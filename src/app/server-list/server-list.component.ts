@@ -8,10 +8,8 @@ import {ServerListService} from './server-list.service';
 
 })
 export class ServerListComponent implements OnInit {
-  showFlags: boolean = false;
-  listFilter: string = 'cart';
   private data: any;
-  private errorMessage: any;
+  private errorMessage: string;
 
   constructor(private serverListService: ServerListService  ) {
   }
@@ -21,9 +19,5 @@ export class ServerListComponent implements OnInit {
       next: data => this.data = data,
       error: err => this.errorMessage = err
     });
-  }
-
-  toggleShowFlags(): void {
-    this.showFlags = !this.showFlags;
   }
 }

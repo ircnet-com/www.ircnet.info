@@ -1,3 +1,4 @@
+/* tslint:disable:one-line */
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ServerList} from './server-list';

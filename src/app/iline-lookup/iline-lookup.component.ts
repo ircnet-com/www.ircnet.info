@@ -15,7 +15,7 @@ export class IlineLookupComponent implements OnInit {
 
   private ilineForm: IlineForm;
   private response: IlineLookupResponse;
-  private errorMessage: any;
+  private errorMessage: string;
   private loading: boolean;
 
   constructor(private ilineLookupService: IlineLookupService, private http: HttpClient) {

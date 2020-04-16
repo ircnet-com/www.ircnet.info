@@ -4,7 +4,7 @@
 
 <ng-container *ngIf="!this.errorMessage">
   <div class="col">
-    <form (keyup)="filterById($event)">
+    <form (keyup)="filterById()">
       <div class="row">
         <div class="col-xs">
           <select #selectInput name="filterType" [(ngModel)]="filterType" class="form-control"
