@@ -1,8 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {DataTableDirective} from 'angular-datatables';
-import {throwError} from 'rxjs/index';
-import {catchError} from 'rxjs/internal/operators';
+import {AppSettings} from '../app.settings';
 
 class Channel {
   name: string;
@@ -25,8 +24,6 @@ class DataTablesResponse {
 export class ChannelListComponent implements OnInit {
   @ViewChild(DataTableDirective, {static: false})
   datatableElement: DataTableDirective;
-  min: string;
-  max: string;
 
   dtOptions: DataTables.Settings = {};
   channels: Channel[];
@@ -35,6 +32,7 @@ export class ChannelListComponent implements OnInit {
   pageSizes = [25, 50, 100];
   pageSize = this.pageSizes[0];
   filter: string = '';
+  private errorMessage: string;
 
   constructor(private http: HttpClient) {}
 
@@ -50,22 +48,21 @@ export class ChannelListComponent implements OnInit {
       order: [[ 1, 'desc' ]],
       columns: [{ data: 'name', orderable: true }, { data: 'userCount', orderable: true }, { data: 'topic', orderable: false }],
       ajax: (dataTablesParameters: any, callback) => {
-        if(this.filterType == this.filterTypes[0]) {
+        if (this.filterType == this.filterTypes[0]) {
           dataTablesParameters.search.value = this.filter;
         }
-        else if(this.filterType == this.filterTypes[1]) {
+        else if (this.filterType == this.filterTypes[1]) {
           dataTablesParameters.columns[0].search.value = this.filter;
         }
-        else if(this.filterType == this.filterTypes[2]) {
+        else if (this.filterType == this.filterTypes[2]) {
           dataTablesParameters.columns[2].search.value = this.filter;
         }
 
         that.http
           .post<DataTablesResponse>(
-            'https://clis.vague.ovh/',
+            AppSettings.CLIS_URL,
             dataTablesParameters, {}
           )
-          .pipe(catchError(this.handleError))
           .subscribe(response => {
           that.channels = response.data;
 
@@ -74,7 +71,9 @@ export class ChannelListComponent implements OnInit {
             recordsFiltered: response.recordsFiltered,
             data: []
           });
-        });
+        },
+        error => this.errorMessage = 'Connection error. Please try again.'
+        );
       },
     };
   }
@@ -89,27 +88,5 @@ export class ChannelListComponent implements OnInit {
     this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       dtInstance.draw();
     });
-  }
-
-  pageSizeChanged(): void {
-    this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
-      dtInstance.draw();
-    });
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    alert('Could not retrieve any data. Please reload the page');
-    if (error.error instanceof ErrorEvent) {
-      // A client-side or network error occurred. Handle it accordingly.
-      console.error('An error occurred:', error.error.message);
-    } else {
-      // The backend returned an unsuccessful response code.
-      // The response body may contain clues as to what went wrong,
-      console.error(
-        `Backend returned code ${error.status}, ` +
-        `body was: ${error.error.errorMessage}`);
-    }
-    // return an observable with a user-facing error message
-    return throwError(error.error.errorMessage);
   }
 }

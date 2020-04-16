@@ -1,6 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { IlineLookupComponent } from './iline-lookup.component';
+import {IlineLookupComponent} from './iline-lookup.component';
 
 describe('IlineLookupComponent', () => {
   let component: IlineLookupComponent;

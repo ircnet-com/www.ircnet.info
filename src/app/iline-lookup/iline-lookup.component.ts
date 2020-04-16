@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import {IlineForm} from "./iline-form";
-import {NgForm} from "@angular/forms";
-import {IlineLookupService} from "./iline-lookup.service";
-import {IlineLookupResponse} from "./iline-lookup-response";
-import {HttpClient} from "@angular/common/http";
+import {Component, OnInit} from '@angular/core';
+import {IlineForm} from './iline-form';
+import {NgForm} from '@angular/forms';
+import {IlineLookupService} from './iline-lookup.service';
+import {IlineLookupResponse} from './iline-lookup-response';
+import {HttpClient} from '@angular/common/http';
+import {AppSettings} from '../app.settings';
 
 @Component({
   selector: 'app-iline-lookup',
@@ -12,14 +13,14 @@ import {HttpClient} from "@angular/common/http";
 })
 export class IlineLookupComponent implements OnInit {
 
-  private ilineForm : IlineForm;
+  private ilineForm: IlineForm;
   private response: IlineLookupResponse;
   private errorMessage: any;
   private loading: boolean;
 
   constructor(private ilineLookupService: IlineLookupService, private http: HttpClient) {
     this.ilineForm = {
-      address: ""
+      address: ''
     };
   }
 
@@ -49,7 +50,7 @@ export class IlineLookupComponent implements OnInit {
   }
 
   getIpAddress() {
-    this.http.get('http://bot.ircnet.info/api/ipaddress')
+    this.http.get(AppSettings.INFOBOT_API_URL + '/ipaddress')
       .subscribe((data: any) => {
         this.ilineForm.address = data.address;
       });

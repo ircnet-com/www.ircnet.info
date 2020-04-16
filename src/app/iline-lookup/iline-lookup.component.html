@@ -1,26 +1,28 @@
-  <div *ngIf="this.errorMessage" class="alert alert-danger" role="alert">
-    {{ this.errorMessage }}
-  </div>
-
+<div *ngIf="this.errorMessage" class="alert alert-danger" role="alert">
+  {{ this.errorMessage }}
+</div>
 
 <h2>I-Line Lookup</h2>
 <form #form="ngForm" (ngSubmit)="onSubmit(form)">
   <div class="form-group row col-lg-5">
     <label for="address">IP Address</label>
-    <input class="form-control" id="address" name="address" [(ngModel)]="ilineForm.address" required #addressField="ngModel"/>
+    <input class="form-control" id="address" name="address" [(ngModel)]="ilineForm.address" required
+           #addressField="ngModel"/>
     <div [hidden]="!form.submitted || addressField.valid" class="field-error">Enter a valid IPv4 or IPv6 address</div>
   </div>
 
   <button [disabled]="this.loading" type="submit" class="btn btn-primary">
     Look up
-    <span *ngIf="this.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-left: 5px"></span>
+    <span *ngIf="this.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+          style="margin-left: 5px"></span>
   </button>
 </form>
 
 <div *ngIf="this.response">
   <br>
   <h2>Result</h2>
-  <p>Result for IP address {{ this.response.request.address}} {{ this.response.request.hostname != this.response.request.address ? " and hostname " + this.response.request.hostname : ""}}</p>
+  <p>Result for IP
+    address {{ this.response.request.address}} {{ this.response.request.hostname != this.response.request.address ? " and hostname " + this.response.request.hostname : ""}}</p>
 
   <table class="table table-striped">
     <thead>
