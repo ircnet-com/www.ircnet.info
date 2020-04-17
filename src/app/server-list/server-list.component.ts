@@ -8,8 +8,8 @@ import {ServerListService} from './server-list.service';
 
 })
 export class ServerListComponent implements OnInit {
-  private data: any;
-  private errorMessage: string;
+  data: any;
+  errorMessage: string;
 
   constructor(private serverListService: ServerListService  ) {
   }

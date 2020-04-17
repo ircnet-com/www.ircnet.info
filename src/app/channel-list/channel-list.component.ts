@@ -38,7 +38,7 @@ export class ChannelListComponent implements OnInit, AfterViewInit {
   pageSizes = [25, 50, 100];
   pageSize = this.pageSizes[0];
   searchTerm = '';
-  private errorMessage: string;
+  errorMessage: string;
 
   constructor(private http: HttpClient) {}
 

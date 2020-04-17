@@ -12,11 +12,10 @@ import {AppSettings} from '../app.settings';
   styleUrls: ['./iline-lookup.component.css']
 })
 export class IlineLookupComponent implements OnInit {
-
-  private ilineForm: IlineForm;
-  private response: IlineLookupResponse;
-  private errorMessage: string;
-  private loading: boolean;
+  ilineForm: IlineForm;
+  response: IlineLookupResponse;
+  errorMessage: string;
+  loading: boolean;
 
   constructor(private ilineLookupService: IlineLookupService, private http: HttpClient) {
     this.ilineForm = {
