@@ -1,8 +1,10 @@
 /* tslint:disable:triple-equals one-line */
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {DataTableDirective} from 'angular-datatables';
 import {AppSettings} from '../app.settings';
+import {fromEvent} from 'rxjs';
+import {debounceTime} from 'rxjs/operators';
 
 class Channel {
   name: string;
@@ -22,9 +24,12 @@ class DataTablesResponse {
   templateUrl: './channel-list.component.html',
   styleUrls: ['./channel-list.component.css']
 })
-export class ChannelListComponent implements OnInit {
+export class ChannelListComponent implements OnInit, AfterViewInit {
   @ViewChild(DataTableDirective, {static: false})
   datatableElement: DataTableDirective;
+
+  @ViewChild('searchTermInput', {static: false})
+  searchTermInput: ElementRef;
 
   dtOptions: DataTables.Settings = {};
   channels: Channel[];
@@ -32,7 +37,7 @@ export class ChannelListComponent implements OnInit {
   filterType = this.filterTypes[0];
   pageSizes = [25, 50, 100];
   pageSize = this.pageSizes[0];
-  filter = '';
+  searchTerm = '';
   private errorMessage: string;
 
   constructor(private http: HttpClient) {}
@@ -50,13 +55,13 @@ export class ChannelListComponent implements OnInit {
       columns: [{ data: 'name', orderable: true }, { data: 'userCount', orderable: true }, { data: 'topic', orderable: false }],
       ajax: (dataTablesParameters: any, callback) => {
         if (this.filterType == this.filterTypes[0]) {
-          dataTablesParameters.search.value = this.filter;
+          dataTablesParameters.search.value = this.searchTerm;
         }
         else if (this.filterType == this.filterTypes[1]) {
-          dataTablesParameters.columns[0].search.value = this.filter;
+          dataTablesParameters.columns[0].search.value = this.searchTerm;
         }
         else if (this.filterType == this.filterTypes[2]) {
-          dataTablesParameters.columns[2].search.value = this.filter;
+          dataTablesParameters.columns[2].search.value = this.searchTerm;
         }
 
         that.http
@@ -79,13 +84,20 @@ export class ChannelListComponent implements OnInit {
     };
   }
 
+  ngAfterViewInit(): void {
+    fromEvent(this.searchTermInput.nativeElement, 'keyup')
+      .pipe(debounceTime(300)).subscribe(value => {
+      this.filterByChannelName();
+    });
+  }
+
   filterTypeChanged(): void {
     this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       dtInstance.draw();
     });
   }
 
-  filterById(): void {
+  filterByChannelName(): void {
     this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       dtInstance.draw();
     });

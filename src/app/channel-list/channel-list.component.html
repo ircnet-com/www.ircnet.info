@@ -4,7 +4,7 @@
 
 <ng-container *ngIf="!this.errorMessage">
   <div class="col">
-    <form (keyup)="filterById()">
+    <form>
       <div class="row">
         <div class="col-xs">
           <select #selectInput name="filterType" [(ngModel)]="filterType" class="form-control"
@@ -13,7 +13,7 @@
           </select>
         </div>
         <div class="col">
-          <input name="filter" type="text" class="form-control" placeholder="Search" [(ngModel)]="filter">
+          <input #searchTermInput name="searchTermInput" type="text" class="form-control" placeholder="Search" [(ngModel)]="searchTerm">
         </div>
       </div>
     </form>
