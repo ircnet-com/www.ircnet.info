@@ -35,7 +35,7 @@
             now
           </td>
           <ng-template #other_content>
-            <td>{{getFormattedLastSeenTime(server.lastSeen, data.lastMapReceived)}}</td>
+            <td>{{getFormattedLastSeenTime(server.lastSeen)}} ago</td>
           </ng-template>
 
         </tr>
@@ -49,7 +49,7 @@
   <i>
     <small>Total global users: {{data.totalUsers}}</small>
     <br>
-    <small>Last server map received: {{getFormattedDateDifference(data.lastMapReceived, now)}} ago</small>
+    <small>Last server map received: {{getFormattedDateDifference(data.lastMapReceived)}} ago</small>
   </i>
   <br><br>
 </ng-container>

@@ -11,26 +11,26 @@ import {ServerListService} from './server-list.service';
 export class ServerListComponent implements OnInit {
   data: any;
   errorMessage: string;
-  now: Date;
+
   constructor(private serverListService: ServerListService  ) {
   }
 
   ngOnInit() {
-    this.now = new Date();
     this.data = this.serverListService.getServerList().subscribe({
       next: data => {
         this.data = data;
-        this.now = new Date();
       },
       error: err => this.errorMessage = err
     });
   }
 
-  getFormattedDateDifference(date1String: string, date2: Date): string {
+  getFormattedDateDifference(date1String: string): string {
     const date1 = new Date(date1String);
     date1.setMilliseconds(0);
-    date2.setMilliseconds(0);
-    const diffSeconds = (date2.getTime() - date1.getTime()) / 1000;
+    const now = new Date(this.data.now);
+    now.setMilliseconds(0);
+
+    const diffSeconds = (now.getTime() - date1.getTime()) / 1000;
 
     const days = Math.floor(diffSeconds / 86400);
     const hours = Math.floor(diffSeconds / 3600) % 24;
@@ -50,36 +50,36 @@ export class ServerListComponent implements OnInit {
     return result.toString();
   }
 
-  getFormattedLastSeenTime(date1String: string, date2: Date): string {
+  getFormattedLastSeenTime(date1String: string): string {
     const date1 = new Date(date1String);
     date1.setMilliseconds(0);
-    date2.setMilliseconds(0);
-    const diffSeconds = (date2.getTime() - date1.getTime()) / 1000;
+    const now = new Date(this.data.now);
+    now.setMilliseconds(0);
 
+    const diffSeconds = (now.getTime() - date1.getTime()) / 1000;
     const days = Math.floor(diffSeconds / 86400);
     const hours = Math.floor(diffSeconds / 3600) % 24;
     const minutes = Math.floor(diffSeconds / 60) % 60;
     const seconds = Math.floor(diffSeconds % 60);
 
-    if (days != 0) {
+    if (days !== 0) {
       return days + ' days';
     }
 
-    if (hours != 0) {
-      if (hours < 3) {
-        const zeroPad = (num, places) => String(num).padStart(places, '0');
-        return hours + ':' + zeroPad(minutes, 2) + ' hours';
+    if (hours !== 0) {
+      if (hours < 3 && minutes !== 0) {
+        return hours + ' h ' + minutes + ' min';
       }
       else {
-        return hours + ' hours';
+        return hours + (hours === 1 ? ' hour' : ' hours');
       }
     }
 
-    if (minutes != 0) {
-      return minutes + ' minutes';
+    if (minutes !== 0) {
+      return minutes + (minutes === 1 ? ' minute' : ' minutes');
     }
 
-    if (seconds != 0) {
+    if (seconds !== 0) {
       return seconds + ' seconds';
     }
   }

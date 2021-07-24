@@ -26,4 +26,5 @@ export interface ServerList {
   });
   totalUsers: number;
   lastMapReceived: string;
+  now: string;
 }
