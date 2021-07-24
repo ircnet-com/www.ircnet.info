@@ -47,7 +47,7 @@ export class ServerListComponent implements OnInit {
       result.shift();
     }
 
-    return result.toString();
+    return result.join(', ');
   }
 
   getFormattedLastSeenTime(date1String: string): string {
