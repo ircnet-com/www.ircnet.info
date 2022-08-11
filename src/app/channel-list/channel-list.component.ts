@@ -4,7 +4,7 @@ import {HttpClient} from '@angular/common/http';
 import {DataTableDirective} from 'angular-datatables';
 import {AppSettings} from '../app.settings';
 import {fromEvent} from 'rxjs';
-import {debounceTime} from 'rxjs/operators';
+import {debounceTime, retry, timeout} from 'rxjs/operators';
 
 class Channel {
   name: string;
@@ -68,6 +68,10 @@ export class ChannelListComponent implements OnInit, AfterViewInit {
           .post<DataTablesResponse>(
             AppSettings.CLIS_URL,
             dataTablesParameters, {}
+          )
+          .pipe(
+            timeout(5000),
+            retry()
           )
           .subscribe(response => {
           that.channels = response.data;
