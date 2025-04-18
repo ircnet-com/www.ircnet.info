@@ -1,26 +1,23 @@
-# IrcnetInfo
+# ircnet.info
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.16.
+[ircnet.info](https://www.ircnet.info) is a dynamic website that interacts with different APIs to provide the following services:
 
-## Development server
+| Service       | API           |
+| ------------- |:-------------:| 
+| Server list   | InfoBot       |
+| I:Line Lookup | InfoBot       | 
+| Channel list  | Clis          | 
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+# Setup
+Install NodeJS and Angular as described [here](https://angular.io/guide/setup-local).
 
-## Code scaffolding
+Clone the git repository and type `npm install` to install all dependencies.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Development
+To start a development server type `ng serve` and navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## Deployment
+Run `ng deploy` to deploy the newest version to [https://www.ircnet.info](https://www.ircnet.info). It will update the sources in the `gh-pages` branch.
 
 ## Further help
 
