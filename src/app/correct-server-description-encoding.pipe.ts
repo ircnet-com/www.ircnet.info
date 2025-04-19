@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'correctServerDescriptionEncoding',
   standalone: true
 })
-export class CorrectServerDescriptionEncodingPipePipe implements PipeTransform {
+export class CorrectServerDescriptionEncodingPipe implements PipeTransform {
   transform(value: string): any {
     if (value == null) {
       return;

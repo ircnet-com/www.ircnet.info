@@ -4,7 +4,7 @@ import {AppSettings} from "../app.settings";
 import {debounceTime, fromEvent, retry, timeout} from "rxjs";
 import {NgForOf, NgIf} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {RemoveColorsPipePipe} from "../remove-colors-pipe.pipe";
+import {RemoveColorsPipe} from "../remove-colors.pipe";
 import {DataTableDirective, DataTablesModule} from "angular-datatables";
 import {Config} from "datatables.net";
 import {Channel} from "./channel";
@@ -23,7 +23,7 @@ class DataTablesResponse {
     NgIf,
     FormsModule,
     NgForOf,
-    RemoveColorsPipePipe,
+    RemoveColorsPipe,
     DataTablesModule
   ],
   templateUrl: './channel-list.component.html',
@@ -51,9 +51,10 @@ export class ChannelListComponent implements OnInit, AfterViewInit {
     const that = this;
 
     this.dtOptions = {
-      dom: 'tipr',
       pagingType: 'full_numbers',
       pageLength: this.pageSize,
+      lengthChange: false,
+      searching: false,
       serverSide: true,
       processing: true,
       order: [[ 1, 'desc' ]],

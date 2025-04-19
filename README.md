@@ -17,7 +17,7 @@ Clone the git repository and type `npm install` to install all dependencies.
 To start a development server type `ng serve` and navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Deployment
-Run `ng deploy` to deploy the newest version to [https://www.ircnet.info](https://www.ircnet.info). It will update the sources in the `gh-pages` branch.
+Run `ng deploy  --cname=www.ircnet.info` to deploy the newest version to [https://www.ircnet.info](https://www.ircnet.info). It will update the sources in the `gh-pages` branch.
 
 ## Further help
 

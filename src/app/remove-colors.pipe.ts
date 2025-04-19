@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'removeColors',
   standalone: true
 })
-export class RemoveColorsPipePipe implements PipeTransform {
+export class RemoveColorsPipe implements PipeTransform {
   transform(text: any): any {
     if (!text || text.length === 0) {
       return text;

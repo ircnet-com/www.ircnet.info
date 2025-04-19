@@ -54,3 +54,7 @@ body {
 #datatable_wrapper > div.bottom {
     margin-top: 1rem;
 }
+
+.dt-bootstrap5 > .row > .dt-layout-full {
+    padding: 0;
+}

@@ -1,13 +1,14 @@
 import {Component, OnInit} from '@angular/core';
 import {ServerListService} from "./server-list.service";
-import {CorrectServerDescriptionEncodingPipePipe} from "../correct-server-description-encoding-pipe.pipe";
+import {CorrectServerDescriptionEncodingPipe} from "../correct-server-description-encoding.pipe";
 import {NgForOf, NgIf} from "@angular/common";
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-server-list',
   standalone: true,
   imports: [
-    CorrectServerDescriptionEncodingPipePipe,
+    CorrectServerDescriptionEncodingPipe,
     NgIf,
     NgForOf
   ],
@@ -17,8 +18,9 @@ import {NgForOf, NgIf} from "@angular/common";
 export class ServerListComponent implements OnInit {
   data: any;
   errorMessage: string = "";
+  embed: boolean = false;
 
-  constructor(private serverListService: ServerListService) {
+  constructor(private serverListService: ServerListService, private route: ActivatedRoute) {
   }
 
   ngOnInit() {
@@ -27,6 +29,10 @@ export class ServerListComponent implements OnInit {
         this.data = data;
       },
       error: err => this.errorMessage = err
+    });
+
+    this.route.queryParams.subscribe(params => {
+      this.embed = params["embed"] === 'true';
     });
   }
 

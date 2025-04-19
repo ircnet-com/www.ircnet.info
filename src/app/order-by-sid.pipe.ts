@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'orderBySID',
   standalone: true
 })
-export class OrderBySIDPipePipe implements PipeTransform {
+export class OrderBySIDPipe implements PipeTransform {
   transform(items: any[]): any {
     return items.sort((a, b) => {
       if (a.sid.startsWith('0PN') && b.sid.startsWith('0PN')) {
