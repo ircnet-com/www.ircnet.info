@@ -4,10 +4,10 @@ import {AppSettings} from "../app.settings";
 import {debounceTime, fromEvent, retry, timeout} from "rxjs";
 import {NgForOf, NgIf} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {RemoveColorsPipe} from "../remove-colors.pipe";
 import {DataTableDirective, DataTablesModule} from "angular-datatables";
 import {Config} from "datatables.net";
 import {Channel} from "./channel";
+import {RemoveColorsService} from "../remove-colors.service";
 
 class DataTablesResponse {
   data!: any[];
@@ -23,7 +23,6 @@ class DataTablesResponse {
     NgIf,
     FormsModule,
     NgForOf,
-    RemoveColorsPipe,
     DataTablesModule
   ],
   templateUrl: './channel-list.component.html',
@@ -45,7 +44,7 @@ export class ChannelListComponent implements OnInit, AfterViewInit {
   searchTerm = '';
   errorMessage: string | undefined;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private removeColorsService: RemoveColorsService) {}
 
   ngOnInit(): void {
     const that = this;
@@ -97,6 +96,7 @@ export class ChannelListComponent implements OnInit, AfterViewInit {
             )
             .subscribe(response => {
                   that.channels = response.data;
+                  this.channels.forEach(value => value.topic = this.removeColorsService.transform(value.topic));
 
                   callback({
                     recordsTotal: response.recordsTotal,
