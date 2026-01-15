@@ -2,11 +2,40 @@
     {{ this.errorMessage }}
 </div>
 
-<ng-container *ngIf="data.countriesWithServers">
-    <div *ngFor="let country of data.countriesWithServers; let i = index">
+<ng-container *ngIf="data?.countriesWithServers">
+
+    <div class="filter-bar card shadow-sm mb-4">
+        <div class="card-body py-2">
+            <div class="d-flex flex-wrap align-items-center gap-4">
+                <div class="text-muted small fw-semibold">Filter</div>
+
+<!--                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" id="filterOpen" [(ngModel)]="filterOpen">
+                    <label class="form-check-label" for="filterOpen">open</label>
+                </div>-->
+
+                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" id="filterSasl" [(ngModel)]="filterSasl">
+                    <label class="form-check-label" for="filterSasl">SASL</label>
+                </div>
+
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button
+                            *ngIf="filterOpen || filterSasl"
+                            class="btn btn-sm btn-outline-secondary"
+                            type="button"
+                            (click)="filterOpen=false; filterSasl=false">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngFor="let country of filteredCountries; let i = index">
         <br *ngIf="i != 0">
         <h2>{{ country.countryName }}</h2>
-        <p>Total users: {{ country.totalUsers }}</p>
+        <p *ngIf="!(filterOpen || filterSasl)">Total users: {{ getDisplayedCountryUsers(country) }}</p>
 
         <div class="table-responsive">
             <table class="table table-striped">

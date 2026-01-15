@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ServerListService} from "./server-list.service";
 import {CorrectServerDescriptionEncodingPipe} from "../correct-server-description-encoding.pipe";
 import {NgForOf, NgIf} from "@angular/common";
+import {FormsModule} from "@angular/forms";
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -10,7 +11,8 @@ import {ActivatedRoute} from '@angular/router';
   imports: [
     CorrectServerDescriptionEncodingPipe,
     NgIf,
-    NgForOf
+    NgForOf,
+    FormsModule
   ],
   templateUrl: './server-list.component.html',
   styleUrl: './server-list.component.scss'
@@ -19,6 +21,35 @@ export class ServerListComponent implements OnInit {
   data: any;
   errorMessage: string = "";
   embed: boolean = false;
+
+  filterOpen: boolean = false;
+  filterSasl: boolean = false;
+
+  get filteredCountries(): any[] {
+    const countries = this.data?.countriesWithServers ?? [];
+    return countries
+      .map((country: any) => ({
+        ...country,
+        serverList: (country.serverList ?? []).filter((server: any) => this.matchesFilters(server))
+      }))
+      .filter((country: any) => (country.serverList?.length ?? 0) > 0);
+  }
+
+  private matchesFilters(server: any): boolean {
+    if (this.filterOpen && !server?.open) {
+      return false;
+    }
+    if (this.filterSasl && !server?.sasl) {
+      return false;
+    }
+
+    return true;
+  }
+
+  getDisplayedCountryUsers(country: any): number {
+    return (country?.serverList ?? []).reduce((sum: number, server: any) => sum + (server?.userCount ?? 0), 0);
+  }
+
 
   constructor(private serverListService: ServerListService, private route: ActivatedRoute) {
   }
