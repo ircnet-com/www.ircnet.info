@@ -1,19 +1,20 @@
 import {Component, OnInit} from '@angular/core';
 import {ServerListService} from "./server-list.service";
 import {CorrectServerDescriptionEncodingPipe} from "../correct-server-description-encoding.pipe";
-import {NgForOf, NgIf} from "@angular/common";
+import {NgClass, NgForOf, NgIf} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-server-list',
   standalone: true,
-  imports: [
-    CorrectServerDescriptionEncodingPipe,
-    NgIf,
-    NgForOf,
-    FormsModule
-  ],
+    imports: [
+        CorrectServerDescriptionEncodingPipe,
+        NgIf,
+        NgForOf,
+        FormsModule,
+        NgClass
+    ],
   templateUrl: './server-list.component.html',
   styleUrl: './server-list.component.scss'
 })
@@ -22,8 +23,27 @@ export class ServerListComponent implements OnInit {
   errorMessage: string = "";
   embed: boolean = false;
 
+  // If enabled (via query param), do not render country headings and show one single table.
+  flatView: boolean = false;
+
   filterOpen: boolean = false;
   filterSasl: boolean = false;
+
+  private updatingFromUrl: boolean = false;
+
+  get flatServers(): any[] {
+    const servers: any[] = [];
+    for (const country of this.filteredCountries) {
+      for (const server of (country.serverList ?? [])) {
+        servers.push({
+          ...server,
+          countryCode: country.countryCode,
+          countryName: country.countryName
+        });
+      }
+    }
+    return servers;
+  }
 
   get filteredCountries(): any[] {
     const countries = this.data?.countriesWithServers ?? [];
@@ -51,7 +71,11 @@ export class ServerListComponent implements OnInit {
   }
 
 
-  constructor(private serverListService: ServerListService, private route: ActivatedRoute) {
+  constructor(
+    private serverListService: ServerListService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
   }
 
   ngOnInit() {
@@ -64,7 +88,90 @@ export class ServerListComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       this.embed = params["embed"] === 'true';
+
+      const saslPresent = Object.prototype.hasOwnProperty.call(params, 'sasl');
+      const saslEnabled = this.isTruthyQueryParam(params, 'sasl');
+      const saslRaw = saslPresent ? params['sasl'] : undefined;
+      const saslRawNormalized = (saslRaw === undefined || saslRaw === null) ? '' : String(saslRaw).trim().toLowerCase();
+      const shouldCanonicalizeSasl =
+        (saslEnabled && saslRawNormalized !== 'true') ||
+        (!saslEnabled && saslPresent && ["false", "0", "no", "n", "off"].includes(saslRawNormalized));
+
+      const flatPresent = Object.prototype.hasOwnProperty.call(params, 'flat');
+      const flatEnabled = this.isTruthyQueryParam(params, 'flat');
+
+      const flatRaw = flatPresent ? params['flat'] : undefined;
+      const flatRawNormalized = (flatRaw === undefined || flatRaw === null) ? '' : String(flatRaw).trim().toLowerCase();
+      const shouldCanonicalizeFlat =
+        (flatEnabled && flatRawNormalized !== 'true') ||
+        (!flatEnabled && flatPresent && ["false", "0"].includes(flatRawNormalized));
+
+      this.updatingFromUrl = true;
+      this.filterSasl = saslEnabled;
+      this.flatView = flatEnabled;
+      this.updatingFromUrl = false;
+
+      if (shouldCanonicalizeSasl || shouldCanonicalizeFlat) {
+        this.syncUrlWithFilters();
+      }
     });
+  }
+
+  onSaslToggleChanged(_: boolean) {
+    this.syncUrlWithFilters();
+  }
+
+  resetFilters() {
+    this.filterOpen = false;
+    this.filterSasl = false;
+    this.syncUrlWithFilters();
+  }
+
+  private syncUrlWithFilters() {
+    if (this.updatingFromUrl) {
+      return;
+    }
+
+    // Always write sasl=true when enabled (but still accept bare ?sasl on inbound).
+    const queryParams: any = {
+      // canonical query params
+      sasl: this.filterSasl ? 'true' : null,
+      flat: this.flatView ? 'true' : null,
+
+      nocountry: null,
+      hideCountry: null,
+      hidecountry: null
+    };
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+  private isTruthyQueryParam(params: any, key: string): boolean {
+    if (!Object.prototype.hasOwnProperty.call(params, key)) {
+      return false;
+    }
+
+    const raw = params[key];
+    if (raw === undefined || raw === null || raw === '') {
+      // ?sasl or ?sasl=
+      return true;
+    }
+
+    const value = String(raw).trim().toLowerCase();
+    if (["true", "1"].includes(value)) {
+      return true;
+    }
+    if (["false", "0"].includes(value)) {
+      return false;
+    }
+
+    // Unknown value: treat as enabled if the key is present.
+    return true;
   }
 
   getFormattedDateDifference(date1String: string): string {
