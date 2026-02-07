@@ -26,8 +26,13 @@ export class ServerListComponent implements OnInit {
   // If enabled (via query param), do not render country headings and show one single table.
   flatView: boolean = false;
 
-  filterOpen: boolean = false;
-  filterSasl: boolean = false;
+  /**
+   * Filter mode (mutually exclusive):
+   * - ALL  : show all servers
+   * - OPEN : show only "open" servers
+   * - SASL : show only servers that support SASL
+   */
+  mode: 'ALL' | 'OPEN' | 'SASL' = 'ALL';
 
   private updatingFromUrl: boolean = false;
 
@@ -56,14 +61,13 @@ export class ServerListComponent implements OnInit {
   }
 
   private matchesFilters(server: any): boolean {
-    if (this.filterOpen && !server?.open) {
-      return false;
+    if (this.mode === 'OPEN') {
+      return !!server?.open;
     }
-    if (this.filterSasl && !server?.sasl) {
-      return false;
+    if (this.mode === 'SASL') {
+      return !!server?.sasl;
     }
-
-    return true;
+    return true; // ALL
   }
 
   getDisplayedCountryUsers(country: any): number {
@@ -89,6 +93,8 @@ export class ServerListComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.embed = params["embed"] === 'true';
 
+      const openEnabled = this.isTruthyQueryParam(params, 'open');
+
       const saslPresent = Object.prototype.hasOwnProperty.call(params, 'sasl');
       const saslEnabled = this.isTruthyQueryParam(params, 'sasl');
       const saslRaw = saslPresent ? params['sasl'] : undefined;
@@ -96,6 +102,13 @@ export class ServerListComponent implements OnInit {
       const shouldCanonicalizeSasl =
         (saslEnabled && saslRawNormalized !== 'true') ||
         (!saslEnabled && saslPresent && ["false", "0", "no", "n", "off"].includes(saslRawNormalized));
+
+      const openPresent = Object.prototype.hasOwnProperty.call(params, 'open');
+      const openRaw = openPresent ? params['open'] : undefined;
+      const openRawNormalized = (openRaw === undefined || openRaw === null) ? '' : String(openRaw).trim().toLowerCase();
+      const shouldCanonicalizeOpen =
+        (openEnabled && openRawNormalized !== 'true') ||
+        (!openEnabled && openPresent && ["false", "0", "no", "n", "off"].includes(openRawNormalized));
 
       const flatPresent = Object.prototype.hasOwnProperty.call(params, 'flat');
       const flatEnabled = this.isTruthyQueryParam(params, 'flat');
@@ -107,23 +120,32 @@ export class ServerListComponent implements OnInit {
         (!flatEnabled && flatPresent && ["false", "0"].includes(flatRawNormalized));
 
       this.updatingFromUrl = true;
-      this.filterSasl = saslEnabled;
+      // Mutually exclusive modes: SASL wins over OPEN if both are present.
+      if (saslEnabled) {
+        this.mode = 'SASL';
+      } else if (openEnabled) {
+        this.mode = 'OPEN';
+      } else {
+        this.mode = 'ALL';
+      }
       this.flatView = flatEnabled;
       this.updatingFromUrl = false;
 
-      if (shouldCanonicalizeSasl || shouldCanonicalizeFlat) {
+      // If both open and sasl are present, canonicalize to only one (SASL).
+      const bothPresent = saslEnabled && openEnabled;
+
+      if (shouldCanonicalizeSasl || shouldCanonicalizeOpen || shouldCanonicalizeFlat || bothPresent) {
         this.syncUrlWithFilters();
       }
     });
   }
 
-  onSaslToggleChanged(_: boolean) {
+  onModeChanged(_: any) {
     this.syncUrlWithFilters();
   }
 
   resetFilters() {
-    this.filterOpen = false;
-    this.filterSasl = false;
+    this.mode = 'ALL';
     this.syncUrlWithFilters();
   }
 
@@ -135,7 +157,8 @@ export class ServerListComponent implements OnInit {
     // Always write sasl=true when enabled (but still accept bare ?sasl on inbound).
     const queryParams: any = {
       // canonical query params
-      sasl: this.filterSasl ? 'true' : null,
+      sasl: this.mode === 'SASL' ? 'true' : null,
+      open: this.mode === 'OPEN' ? 'true' : null,
       flat: this.flatView ? 'true' : null,
 
       nocountry: null,
