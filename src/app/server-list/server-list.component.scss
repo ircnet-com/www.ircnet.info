@@ -1,38 +1,48 @@
-.mode-toggle-container {
-  background-color: #f8f9fa; // Hellgrauer Hintergrund
-  border-radius: 50px;       // Pill-Form
+.mode-toggle {
+  background: #f8f9fa;
   border: 1px solid #dee2e6;
+  border-radius: 999px;
+  gap: .25rem;
 
   .mode-btn {
-    border: none;
-    border-radius: 50px;
-    padding: 0.4rem 1.2rem;
-    font-size: 0.85rem;
+    border: 0;
+    border-radius: 999px;
+    padding: .35rem .9rem;
+    font-size: .875rem;
     font-weight: 600;
     color: #6c757d;
-    transition: all 0.2s ease-in-out;
+    background: transparent;
+    transition: all .15s ease;
+    display: inline-flex; // Sorgt für saubere Ausrichtung von Emoji + Text
+    align-items: center;
 
     &:hover {
+      background: rgba(0, 0, 0, 0.04);
       color: #495057;
-      background-color: rgba(0,0,0,0.03);
     }
   }
 
-  // Zustand: Wenn Radio-Button ausgewählt ist
+  /* Aktiv-Zustand für alle Buttons */
   .btn-check:checked + .mode-btn {
-    background-color: #ffffff;
+    background: #fff;
     color: #0d6efd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
-  // Spezieller Akzent für SASL, wenn aktiv
-  .btn-check:checked + .mode-btn-sasl {
-    color: #0d6efd;
-    border: 1px solid rgba(13, 110, 253, 0.2);
+    /* Speziell für SASL einen leicht blaueren Schatten, falls gewünscht */
+    &.mode-btn-sasl {
+      box-shadow: 0 2px 6px rgba(13, 110, 253, 0.18);
+    }
   }
+}
 
-  .lock-icon {
-    font-size: 0.9rem;
-    vertical-align: middle;
-  }
+/* Fokus-Zustand für Barrierefreiheit */
+.btn-check:focus-visible + .mode-btn {
+  outline: 2px solid rgba(13, 110, 253, 0.5);
+  outline-offset: 1px;
+}
+
+/* Emoji-Korrektur */
+.mode-btn span {
+  line-height: 1;
+  font-size: 1rem;
 }

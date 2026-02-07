@@ -7,27 +7,24 @@
     <div class="filter-bar card shadow-sm mb-4">
         <div class="card-body py-2">
             <div class="d-flex flex-wrap align-items-center gap-4">
+
                 <div class="text-muted small fw-semibold">Filter</div>
 
-              <div class="mode-toggle-container p-1 d-inline-flex align-items-center" aria-label="Server mode selection">
-                <input type="radio" class="btn-check" name="mode" id="modeAll"
-                       [value]="'ALL'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
-                <label class="btn mode-btn" for="modeAll">
-                  <i class="bi bi-grid-fill me-1"></i> All
-                </label>
+                <div class="mode-toggle p-1 d-inline-flex align-items-center" aria-label="Server mode">
+                  <input type="radio" class="btn-check" name="mode" id="modeAll"
+                         [value]="'ALL'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
+                  <label class="btn mode-btn" for="modeAll">ALL</label>
 
-                <input type="radio" class="btn-check" name="mode" id="modeOpen"
-                       [value]="'OPEN'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
-                <label class="btn mode-btn" for="modeOpen">
-                  <i class="bi bi-unlock-fill me-1"></i> Open
-                </label>
+                  <input type="radio" class="btn-check" name="mode" id="modeOpen"
+                         [value]="'OPEN'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
+                  <label class="btn mode-btn" for="modeOpen">OPEN</label>
 
-                <input type="radio" class="btn-check" name="mode" id="modeSasl"
-                       [value]="'SASL'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
-                <label class="btn mode-btn mode-btn-sasl" for="modeSasl">
-                  <span class="lock-icon">🔐</span> SASL
-                </label>
-              </div>
+                  <input type="radio" class="btn-check" name="mode" id="modeSasl"
+                         [value]="'SASL'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
+                  <label class="btn mode-btn mode-btn-sasl" for="modeSasl">
+                    <span class="me-1">🔐</span>SASL
+                  </label>
+                </div>
 
                 <div class="ms-auto d-flex align-items-center gap-2">
                     <button
