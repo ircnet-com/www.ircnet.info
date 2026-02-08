@@ -68,3 +68,30 @@
   background-color: rgba(13, 110, 253, 0.04) !important;
   transition: background-color 0.1s ease;
 }
+
+.server-badges {
+  margin-left: .4rem;
+  display: inline-flex;
+  gap: .25rem;
+  vertical-align: middle;
+}
+
+.chip {
+  display: inline-block;
+  padding: .1rem .35rem;
+  font-size: .7rem;
+  font-weight: 600;
+  line-height: 1.1;
+  border-radius: .35rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.chip--open {
+  color: #146c43;
+}
+
+.chip--sasl {
+  color: #0a58ca;
+}

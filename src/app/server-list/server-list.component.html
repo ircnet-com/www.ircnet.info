@@ -75,7 +75,13 @@
                     <tbody>
                     <tr *ngFor="let server of country.serverList"
                         [ngClass]="{ 'table-danger': server.lastSeen != data.lastMapReceived }">
-                        <td>{{server.serverName}}</td>
+                        <td>
+                          {{server.serverName}}
+                          <span class="server-badges" *ngIf="mode === 'ALL'">
+                            <span *ngIf="server.open" class="chip chip--open">OPEN</span>
+                            <span *ngIf="server.sasl" class="chip chip--sasl">SASL</span>
+                          </span>
+                        </td>
                         <td>{{server.serverInfo | correctServerDescriptionEncoding}}</td>
                         <td>{{server.userCount}}</td>
                         <td>{{server.sid}}</td>
