@@ -5,6 +5,7 @@ $success-bg-subtle: #d4edda;
 $success-border-subtle: #c3e6cb;
 
 @import '../node_modules/bootstrap/scss/bootstrap.scss';
+@import "bootstrap-icons/font/bootstrap-icons.css";
 
 .container-fluid {
     padding-right: 1.5em;

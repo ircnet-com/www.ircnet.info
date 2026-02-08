@@ -13,16 +13,20 @@
                 <div class="mode-toggle p-1 d-inline-flex align-items-center" aria-label="Server mode">
                   <input type="radio" class="btn-check" name="mode" id="modeAll"
                          [value]="'ALL'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
-                  <label class="btn mode-btn" for="modeAll">ALL</label>
+                  <label class="btn mode-btn" for="modeAll">
+                    <i class="bi bi-list-ul"></i> ALL
+                  </label>
 
                   <input type="radio" class="btn-check" name="mode" id="modeOpen"
                          [value]="'OPEN'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
-                  <label class="btn mode-btn" for="modeOpen">OPEN</label>
+                  <label class="btn mode-btn" for="modeOpen">
+                    <i class="bi bi-globe"></i> OPEN
+                  </label>
 
                   <input type="radio" class="btn-check" name="mode" id="modeSasl"
                          [value]="'SASL'" [(ngModel)]="mode" (ngModelChange)="onModeChanged($event)" autocomplete="off">
                   <label class="btn mode-btn mode-btn-sasl" for="modeSasl">
-                    <span class="me-1">🔐</span>SASL
+                    <i class="bi bi-person-check"></i> SASL
                   </label>
                 </div>
 
