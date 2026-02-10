@@ -120,14 +120,19 @@
 
 .filter-inline-left {
   min-width: 0;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap !important;
 }
 
 .country-toggle-btn {
   flex: 0 0 auto;
-  margin-left: 0.35rem;
   padding-left: 0.45rem;
   padding-right: 0.45rem;
+  height: 38px;
+  display: flex;
+  align-items: center;
 }
 
 @media (min-width: 768px) {
