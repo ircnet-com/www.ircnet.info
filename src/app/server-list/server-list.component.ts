@@ -1,20 +1,22 @@
 import {Component, OnInit} from '@angular/core';
 import {ServerListService} from "./server-list.service";
 import {CorrectServerDescriptionEncodingPipe} from "../correct-server-description-encoding.pipe";
-import {NgClass, NgForOf, NgIf} from "@angular/common";
+import {NgClass, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-server-list',
   standalone: true,
-    imports: [
-        CorrectServerDescriptionEncodingPipe,
-        NgIf,
-        NgForOf,
-        FormsModule,
-        NgClass
-    ],
+  imports: [
+    CorrectServerDescriptionEncodingPipe,
+    NgIf,
+    NgForOf,
+    FormsModule,
+    NgClass,
+    RouterLink,
+    UpperCasePipe
+  ],
   templateUrl: './server-list.component.html',
   styleUrl: './server-list.component.scss'
 })
@@ -34,6 +36,9 @@ export class ServerListComponent implements OnInit {
    */
   mode: 'ALL' | 'OPEN' | 'SASL' = 'ALL';
 
+  // If set (via query param), only show servers from the given ISO-3166-1 alpha-2 code (lowercase).
+  country: string | null = null;
+
   private updatingFromUrl: boolean = false;
 
   get flatServers(): any[] {
@@ -43,6 +48,7 @@ export class ServerListComponent implements OnInit {
         servers.push({
           ...server,
           countryCode: country.countryCode,
+          countryCodeAlpha2: country.countryCodeAlpha2,
           countryName: country.countryName
         });
       }
@@ -52,12 +58,46 @@ export class ServerListComponent implements OnInit {
 
   get filteredCountries(): any[] {
     const countries = this.data?.countriesWithServers ?? [];
+    const selectedCountry = this.country;
     return countries
+      .filter((country: any) => {
+        if (!selectedCountry) {
+          return true;
+        }
+        const alpha2 = String(country?.countryCodeAlpha2 ?? '').trim().toLowerCase();
+        return alpha2 === selectedCountry;
+      })
       .map((country: any) => ({
         ...country,
         serverList: (country.serverList ?? []).filter((server: any) => this.matchesFilters(server))
       }))
       .filter((country: any) => (country.serverList?.length ?? 0) > 0);
+  }
+
+  getCountryAnchor(country: any): string {
+    return String(country?.countryCodeAlpha2 ?? '').trim().toLowerCase();
+  }
+
+  buildCountryQueryParams(alpha2: string): any {
+    const qp: any = {
+      country: String(alpha2 ?? '').trim().toLowerCase()
+    };
+
+    if (this.mode === 'SASL') {
+      qp.sasl = 'true';
+    } else if (this.mode === 'OPEN') {
+      qp.open = 'true';
+    }
+
+    if (this.flatView) {
+      qp.flat = 'true';
+    }
+
+    if (this.embed) {
+      qp.embed = 'true';
+    }
+
+    return qp;
   }
 
   private matchesFilters(server: any): boolean {
@@ -119,6 +159,13 @@ export class ServerListComponent implements OnInit {
         (flatEnabled && flatRawNormalized !== 'true') ||
         (!flatEnabled && flatPresent && ["false", "0"].includes(flatRawNormalized));
 
+      const countryPresent = Object.prototype.hasOwnProperty.call(params, 'country');
+      const countryRaw = countryPresent ? params['country'] : undefined;
+      const countryRawString = countryPresent ? String(countryRaw ?? '').trim() : '';
+      const countryNormalized = countryRawString.toLowerCase();
+      const countryValue = /^[a-z]{2}$/.test(countryNormalized) ? countryNormalized : null;
+      const shouldCanonicalizeCountry = countryPresent && (countryValue == null || countryRawString !== countryValue);
+
       this.updatingFromUrl = true;
       // Mutually exclusive modes: SASL wins over OPEN if both are present.
       if (saslEnabled) {
@@ -129,12 +176,13 @@ export class ServerListComponent implements OnInit {
         this.mode = 'ALL';
       }
       this.flatView = flatEnabled;
+      this.country = countryValue;
       this.updatingFromUrl = false;
 
       // If both open and sasl are present, canonicalize to only one (SASL).
       const bothPresent = saslEnabled && openEnabled;
 
-      if (shouldCanonicalizeSasl || shouldCanonicalizeOpen || shouldCanonicalizeFlat || bothPresent) {
+      if (shouldCanonicalizeSasl || shouldCanonicalizeOpen || shouldCanonicalizeFlat || shouldCanonicalizeCountry || bothPresent) {
         this.syncUrlWithFilters();
       }
     });
@@ -149,7 +197,12 @@ export class ServerListComponent implements OnInit {
     this.syncUrlWithFilters();
   }
 
-  private syncUrlWithFilters() {
+  clearCountry() {
+    this.country = null;
+    this.syncUrlWithFilters();
+  }
+
+  syncUrlWithFilters() {
     if (this.updatingFromUrl) {
       return;
     }
@@ -160,6 +213,7 @@ export class ServerListComponent implements OnInit {
       sasl: this.mode === 'SASL' ? 'true' : null,
       open: this.mode === 'OPEN' ? 'true' : null,
       flat: this.flatView ? 'true' : null,
+      country: this.country ? this.country : null,
 
       nocountry: null,
       hideCountry: null,
@@ -195,6 +249,24 @@ export class ServerListComponent implements OnInit {
 
     // Unknown value: treat as enabled if the key is present.
     return true;
+  }
+
+  private normalizeCountryParam(raw: any): string | null {
+    if (raw === undefined || raw === null) {
+      return null;
+    }
+
+    const value = String(raw).trim().toLowerCase();
+    if (!value) {
+      return null;
+    }
+
+    // Expect ISO-3166-1 alpha-2 codes like "de" or "nl".
+    if (!/^[a-z]{2}$/.test(value)) {
+      return null;
+    }
+
+    return value;
   }
 
   getFormattedDateDifference(date1String: string): string {
