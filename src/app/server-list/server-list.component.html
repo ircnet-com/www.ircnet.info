@@ -49,6 +49,7 @@
                         <button
                                 type="button"
                                 class="filter-pill__action"
+                                [ngClass]="{ 'filter-pill__action--active': country }"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#countryFilterCollapse"
                                 aria-controls="countryFilterCollapse"

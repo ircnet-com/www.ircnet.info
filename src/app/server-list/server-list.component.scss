@@ -135,6 +135,10 @@
   outline-offset: 2px;
 }
 
+.filter-pill__action--active {
+  color: #0d6efd;
+}
+
 @media (max-width: 360px) {
   .mode-toggle .mode-btn {
     padding: 0.4rem 0.55rem;
