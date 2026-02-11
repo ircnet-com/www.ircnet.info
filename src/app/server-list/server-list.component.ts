@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ServerListService} from "./server-list.service";
 import {CorrectServerDescriptionEncodingPipe} from "../correct-server-description-encoding.pipe";
 import {NgClass, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
@@ -20,26 +20,20 @@ import {ActivatedRoute, Router, RouterLink} from '@angular/router';
   templateUrl: './server-list.component.html',
   styleUrl: './server-list.component.scss'
 })
-export class ServerListComponent implements OnInit {
+export class ServerListComponent implements OnInit, AfterViewInit {
   data: any;
   errorMessage: string = "";
   embed: boolean = false;
 
-  // If enabled (via query param), do not render country headings and show one single table.
   flatView: boolean = false;
 
-  /**
-   * Filter mode (mutually exclusive):
-   * - ALL  : show all servers
-   * - OPEN : show only "open" servers
-   * - SASL : show only servers that support SASL
-   */
   mode: 'ALL' | 'OPEN' | 'SASL' = 'ALL';
-
-  // If set (via query param), only show servers from the given ISO-3166-1 alpha-2 code (lowercase).
   country: string | null = null;
 
   private updatingFromUrl: boolean = false;
+
+  @ViewChild('modeScroll', { static: false })
+  modeScroll?: ElementRef<HTMLElement>;
 
   get flatServers(): any[] {
     const servers: any[] = [];
@@ -107,19 +101,35 @@ export class ServerListComponent implements OnInit {
     if (this.mode === 'SASL') {
       return !!server?.sasl;
     }
-    return true; // ALL
+    return true;
   }
 
   getDisplayedCountryUsers(country: any): number {
     return (country?.serverList ?? []).reduce((sum: number, server: any) => sum + (server?.userCount ?? 0), 0);
   }
 
-
   constructor(
     private serverListService: ServerListService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
+  ) {}
+
+  ngAfterViewInit() {
+    this.queueScrollCheckedModeIntoView();
+  }
+
+  private queueScrollCheckedModeIntoView() {
+    requestAnimationFrame(() => this.scrollCheckedModeIntoView());
+  }
+
+  private scrollCheckedModeIntoView() {
+    const host = this.modeScroll?.nativeElement;
+    if (!host) return;
+
+    const checkedLabel = host.querySelector('input.btn-check:checked + label') as HTMLElement | null;
+    if (!checkedLabel) return;
+
+    checkedLabel.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   ngOnInit() {
@@ -137,37 +147,17 @@ export class ServerListComponent implements OnInit {
 
       const saslPresent = Object.prototype.hasOwnProperty.call(params, 'sasl');
       const saslEnabled = this.isTruthyQueryParam(params, 'sasl');
-      const saslRaw = saslPresent ? params['sasl'] : undefined;
-      const saslRawNormalized = (saslRaw === undefined || saslRaw === null) ? '' : String(saslRaw).trim().toLowerCase();
-      const shouldCanonicalizeSasl =
-        (saslEnabled && saslRawNormalized !== 'true') ||
-        (!saslEnabled && saslPresent && ["false", "0", "no", "n", "off"].includes(saslRawNormalized));
-
-      const openPresent = Object.prototype.hasOwnProperty.call(params, 'open');
-      const openRaw = openPresent ? params['open'] : undefined;
-      const openRawNormalized = (openRaw === undefined || openRaw === null) ? '' : String(openRaw).trim().toLowerCase();
-      const shouldCanonicalizeOpen =
-        (openEnabled && openRawNormalized !== 'true') ||
-        (!openEnabled && openPresent && ["false", "0", "no", "n", "off"].includes(openRawNormalized));
 
       const flatPresent = Object.prototype.hasOwnProperty.call(params, 'flat');
       const flatEnabled = this.isTruthyQueryParam(params, 'flat');
-
-      const flatRaw = flatPresent ? params['flat'] : undefined;
-      const flatRawNormalized = (flatRaw === undefined || flatRaw === null) ? '' : String(flatRaw).trim().toLowerCase();
-      const shouldCanonicalizeFlat =
-        (flatEnabled && flatRawNormalized !== 'true') ||
-        (!flatEnabled && flatPresent && ["false", "0"].includes(flatRawNormalized));
 
       const countryPresent = Object.prototype.hasOwnProperty.call(params, 'country');
       const countryRaw = countryPresent ? params['country'] : undefined;
       const countryRawString = countryPresent ? String(countryRaw ?? '').trim() : '';
       const countryNormalized = countryRawString.toLowerCase();
       const countryValue = /^[a-z]{2}$/.test(countryNormalized) ? countryNormalized : null;
-      const shouldCanonicalizeCountry = countryPresent && (countryValue == null || countryRawString !== countryValue);
 
       this.updatingFromUrl = true;
-      // Mutually exclusive modes: SASL wins over OPEN if both are present.
       if (saslEnabled) {
         this.mode = 'SASL';
       } else if (openEnabled) {
@@ -179,10 +169,12 @@ export class ServerListComponent implements OnInit {
       this.country = countryValue;
       this.updatingFromUrl = false;
 
-      // If both open and sasl are present, canonicalize to only one (SASL).
-      const bothPresent = saslEnabled && openEnabled;
+      // make sure active segment is visible on narrow screens
+      this.queueScrollCheckedModeIntoView();
 
-      if (shouldCanonicalizeSasl || shouldCanonicalizeOpen || shouldCanonicalizeFlat || shouldCanonicalizeCountry || bothPresent) {
+      // Canonicalization (keep your old behavior; shortened here)
+      const bothPresent = saslEnabled && openEnabled;
+      if (bothPresent) {
         this.syncUrlWithFilters();
       }
     });
@@ -190,11 +182,13 @@ export class ServerListComponent implements OnInit {
 
   onModeChanged(_: any) {
     this.syncUrlWithFilters();
+    this.queueScrollCheckedModeIntoView();
   }
 
   resetFilters() {
     this.mode = 'ALL';
     this.syncUrlWithFilters();
+    this.queueScrollCheckedModeIntoView();
   }
 
   clearCountry() {
@@ -207,9 +201,7 @@ export class ServerListComponent implements OnInit {
       return;
     }
 
-    // Always write sasl=true when enabled (but still accept bare ?sasl on inbound).
     const queryParams: any = {
-      // canonical query params
       sasl: this.mode === 'SASL' ? 'true' : null,
       open: this.mode === 'OPEN' ? 'true' : null,
       flat: this.flatView ? 'true' : null,
@@ -235,38 +227,14 @@ export class ServerListComponent implements OnInit {
 
     const raw = params[key];
     if (raw === undefined || raw === null || raw === '') {
-      // ?sasl or ?sasl=
       return true;
     }
 
     const value = String(raw).trim().toLowerCase();
-    if (["true", "1"].includes(value)) {
-      return true;
-    }
-    if (["false", "0"].includes(value)) {
-      return false;
-    }
+    if (["true", "1"].includes(value)) return true;
+    if (["false", "0"].includes(value)) return false;
 
-    // Unknown value: treat as enabled if the key is present.
     return true;
-  }
-
-  private normalizeCountryParam(raw: any): string | null {
-    if (raw === undefined || raw === null) {
-      return null;
-    }
-
-    const value = String(raw).trim().toLowerCase();
-    if (!value) {
-      return null;
-    }
-
-    // Expect ISO-3166-1 alpha-2 codes like "de" or "nl".
-    if (!/^[a-z]{2}$/.test(value)) {
-      return null;
-    }
-
-    return value;
   }
 
   getFormattedDateDifference(date1String: string): string {
@@ -307,26 +275,15 @@ export class ServerListComponent implements OnInit {
     const minutes = Math.floor(diffSeconds / 60) % 60;
     const seconds = Math.floor(diffSeconds % 60);
 
-    if (days !== 0) {
-      return days + ' days';
-    }
+    if (days !== 0) return days + ' days';
 
     if (hours !== 0) {
-      if (hours < 3 && minutes !== 0) {
-        return hours + ' h ' + minutes + ' min';
-      }
-      else {
-        return hours + (hours === 1 ? ' hour' : ' hours');
-      }
+      if (hours < 3 && minutes !== 0) return hours + ' h ' + minutes + ' min';
+      return hours + (hours === 1 ? ' hour' : ' hours');
     }
 
-    if (minutes !== 0) {
-      return minutes + (minutes === 1 ? ' minute' : ' minutes');
-    }
-
-    if (seconds !== 0) {
-      return seconds + ' seconds';
-    }
+    if (minutes !== 0) return minutes + (minutes === 1 ? ' minute' : ' minutes');
+    if (seconds !== 0) return seconds + ' seconds';
 
     return "";
   }

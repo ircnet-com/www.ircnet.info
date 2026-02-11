@@ -1,10 +1,10 @@
 .mode-toggle {
   flex: 0 0 auto;
-  background: #f1f3f5;
-  border: 1px solid #dee2e6;
+  background: transparent;
+  border: 0;
   border-radius: 999px;
   gap: 2px;
-  padding: 4px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
 
@@ -14,6 +14,11 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+
+    padding: 0.45rem 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #495057;
 
     i, svg {
       width: 1.1rem;
@@ -65,6 +70,116 @@
   }
 }
 
+.filter-inline {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.filter-pill {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.filter-pill__modes {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+
+  padding-right: 6px;
+}
+
+.filter-pill__modes::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-pill__modes .mode-toggle,
+.filter-pill__modes .mode-btn {
+  white-space: nowrap;
+}
+
+.filter-pill__action {
+  appearance: none;
+  border: 0;
+  background: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 38px;
+  width: 44px;
+
+  border-left: 1px solid #dee2e6;
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+
+  color: #6c757d;
+}
+
+.filter-pill__action:hover {
+  color: #495057;
+}
+
+.filter-pill__action:focus-visible {
+  outline: 2px solid rgba(13, 110, 253, 0.45);
+  outline-offset: 2px;
+}
+
+@media (max-width: 360px) {
+  .mode-toggle .mode-btn {
+    padding: 0.4rem 0.55rem;
+    gap: 4px;
+    font-size: 0.9rem;
+  }
+
+  .mode-toggle .mode-btn i,
+  .mode-toggle .mode-btn svg {
+    width: 1.0rem;
+    height: 1.0rem;
+  }
+
+  .mode-toggle .mode-btn.mode-btn-sasl i,
+  .mode-toggle .mode-btn.mode-btn-sasl svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .filter-pill__action {
+    width: 40px;
+  }
+}
+
+/* desktop: no scroll */
+@media (min-width: 768px) {
+  .filter-pill {
+    width: auto;
+  }
+
+  .filter-pill__modes {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .country-collapse {
+    width: auto;
+    max-width: 320px;
+
+    select {
+      width: 240px;
+    }
+  }
+}
+
 .table-hover tbody tr:hover {
   background-color: rgba(13, 110, 253, 0.04) !important;
   transition: background-color 0.1s ease;
@@ -89,13 +204,8 @@
   white-space: nowrap;
 }
 
-.chip--open {
-  color: #146c43;
-}
-
-.chip--sasl {
-  color: #0a58ca;
-}
+.chip--open { color: #146c43; }
+.chip--sasl { color: #0a58ca; }
 
 .country-filter-link {
   display: inline-flex;
@@ -113,57 +223,56 @@
   }
 }
 
-.filter-inline {
-  row-gap: 0.35rem;
-  margin-left: 0;
-}
-
-.filter-inline-left {
-  min-width: 0;
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap !important;
-}
-
-.country-toggle-btn {
-  flex: 0 0 auto;
-  padding-left: 0.45rem;
-  padding-right: 0.45rem;
-  height: 38px;
-  display: flex;
-  align-items: center;
-}
-
-@media (min-width: 768px) {
-  .filter-inline {
-    flex-wrap: nowrap;
-    width: auto;
-    align-items: center;
-    gap: 1rem;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-
-  .filter-inline-left {
-    flex-wrap: nowrap;
-    flex: 0 0 auto;
-  }
-
-  .mode-toggle {
-    flex: 0 0 auto;
-  }
-
-  .country-collapse {
-    width: auto;
-    max-width: 320px;
-
-    select {
-      width: 240px;
-    }
-  }
-}
-
 .country-collapse {
   width: 100%;
+}
+
+@media (max-width: 576px) {
+  .filter-bar > .card-body > .d-flex > .text-muted.small.fw-semibold {
+    display: none !important;
+  }
+}
+
+/* Slightly tighter on phones */
+@media (max-width: 480px) {
+  .filter-pill {
+    padding: 2px;
+    gap: 0;
+  }
+
+  .filter-pill__modes {
+    padding-right: 4px;
+    scroll-padding-right: 44px;
+  }
+
+  .mode-toggle .mode-btn {
+    padding: 0.42rem 0.55rem;
+    gap: 5px;
+  }
+
+  .filter-pill__action {
+    width: 40px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 360px) {
+  .filter-pill {
+    padding: 1px;
+  }
+
+  .mode-toggle .mode-btn {
+    padding: 0.4rem 0.45rem;
+    gap: 4px;
+    font-size: 0.95rem;
+  }
+
+  .filter-pill__action {
+    width: 36px;
+    height: 36px;
+  }
+
+  .filter-pill__modes {
+    scroll-padding-right: 40px;
+  }
 }
