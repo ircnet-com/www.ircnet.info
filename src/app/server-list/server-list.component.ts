@@ -52,6 +52,18 @@ export class ServerListComponent implements OnInit, AfterViewInit {
     return servers;
   }
 
+  get displayedTotalUsers(): number {
+    return this.flatServers.reduce((sum, server) => sum + (server?.userCount ?? 0), 0);
+  }
+
+  get displayedTotalServers(): number {
+    return this.flatServers.length;
+  }
+
+  get isUnfilteredAllView(): boolean {
+    return this.mode === 'ALL' && !this.effectiveSid && !this.country;
+  }
+
   get filteredCountries(): any[] {
     const countries = this.data?.countriesWithServers ?? [];
     const selectedCountry = this.country;

@@ -121,7 +121,7 @@
             <h2 [attr.id]="getCountryAnchor(country)">
                 {{ country.countryName }}
             </h2>
-            <p *ngIf="mode === 'ALL'">Total users: {{ getDisplayedCountryUsers(country) }}</p>
+            Total users: {{ getDisplayedCountryUsers(country) }}
 
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -165,6 +165,7 @@
     </ng-container>
 
     <ng-template #flat_content>
+        <p *ngIf="effectiveSid">Total users: {{ displayedTotalUsers }}</p>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead class="table-bordered">
@@ -203,13 +204,10 @@
     <br/>
 
     <i>
-      @if(!currentSid) {
-        <small>Total servers linked: {{data.totalServers}}</small>
+        <small>{{ isUnfilteredAllView ? 'Total servers linked' : 'Servers linked' }}: {{ displayedTotalServers }}</small>
         <br>
-
-        <small>Total users: {{data.totalUsers}}</small>
+        <small>{{ isUnfilteredAllView ? 'Total users' : 'Users' }}: {{ displayedTotalUsers }}</small>
         <br>
-      }
         <small>Last server map received: {{getFormattedDateDifference(data.lastMapReceived)}} ago</small>
     </i>
     <br><br>
