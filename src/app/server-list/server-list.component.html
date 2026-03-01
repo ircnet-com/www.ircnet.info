@@ -64,20 +64,33 @@
                 </div>
             </div>
 
-            <div class="collapse country-collapse mt-2" id="countryFilterCollapse" [ngClass]="{ 'show': country }">
-                <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1">Country</label>
-                <select
-                        id="countryFilterMobile"
-                        class="form-select form-select-sm"
-                        [(ngModel)]="country"
-                        (ngModelChange)="syncUrlWithFilters()">
-                    <option [ngValue]="null">All countries</option>
-                    <option
-                            *ngFor="let countryOption of data?.countriesWithServers"
-                            [ngValue]="getCountryAnchor(countryOption)">
-                        {{ countryOption.countryName }}
-                    </option>
-                </select>
+            <div class="collapse country-collapse mt-2" id="countryFilterCollapse" [ngClass]="{ 'show': country || effectiveSid }">
+                <ng-container *ngIf="!effectiveSid">
+                    <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1">Country</label>
+                    <select
+                            id="countryFilterMobile"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="country"
+                            (ngModelChange)="syncUrlWithFilters()">
+                        <option [ngValue]="null">All countries</option>
+                        <option
+                                *ngFor="let countryOption of data?.countriesWithServers"
+                                [ngValue]="getCountryAnchor(countryOption)">
+                            {{ countryOption.countryName }}
+                        </option>
+                    </select>
+                </ng-container>
+
+                <div class="mt-2" *ngIf="effectiveSid">
+                    <span class="badge text-bg-primary sid-filter-badge">
+                        SID: {{ effectiveSid }}
+                        <button
+                                type="button"
+                                class="btn-close btn-close-white"
+                                aria-label="Remove SID filter"
+                                (click)="clearSid()"></button>
+                    </span>
+                </div>
             </div>
 
 <!--            <div class="mt-2">
@@ -102,7 +115,7 @@
         </div>
     </div>
 
-    <ng-container *ngIf="!flatView; else flat_content">
+    <ng-container *ngIf="!flatView && !effectiveSid; else flat_content">
         <div *ngFor="let country of filteredCountries; let i = index">
             <br *ngIf="i != 0">
             <h2 [attr.id]="getCountryAnchor(country)">
@@ -170,13 +183,7 @@
                     [ngClass]="{ 'table-danger': server.lastSeen != data.lastMapReceived }">
                     <td>{{ server.serverName }}</td>
                     <td>{{ server.serverInfo | correctServerDescriptionEncoding }}</td>
-                    <td>
-                        <a
-                                [routerLink]="['/servers']"
-                                [queryParams]="buildCountryQueryParams(server.countryCodeAlpha2)">
-                            {{ server.countryName }}
-                        </a>
-                    </td>
+                    <td>{{ server.countryName }}</td>
                     <td>{{ server.userCount }}</td>
                     <td>{{ server.sid }}</td>
                     <td>{{ server.version }}</td>

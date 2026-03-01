@@ -75,6 +75,20 @@
   min-width: 0;
 }
 
+.sid-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.6rem;
+  font-weight: 600;
+
+  .btn-close {
+    width: 0.5rem;
+    height: 0.5rem;
+    opacity: 0.9;
+  }
+}
+
 .filter-pill {
   width: 100%;
   display: grid;

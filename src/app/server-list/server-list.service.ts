@@ -3,7 +3,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Observable, throwError} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
-import {ServerEntry, ServerList, ServersBySidResponse} from "./server-list";
+import {ServerEntry, ServerList} from "./server-list";
 import {AppSettings} from "../app.settings";
 
 @Injectable({
@@ -11,17 +11,17 @@ import {AppSettings} from "../app.settings";
 })
 export class ServerListService {
   private readonly url = AppSettings.INFOBOT_API_URL + '/serversByCountry';
-  private readonly serversBySidUrl = AppSettings.INFOBOT_API_URL + '/servers';
 
   constructor(private http: HttpClient) {
   }
 
   getServerList(sid?: string | null): Observable<ServerList> {
     const normalizedSid = sid?.trim();
+    const shouldFilterBySid = !!normalizedSid && normalizedSid.length >= 3;
 
-    if (normalizedSid) {
-      return this.http.get<ServersBySidResponse>(`${this.serversBySidUrl}?sid=${encodeURIComponent(normalizedSid)}`).pipe(
-        map((response) => this.mapServersBySidResponse(response, normalizedSid)),
+    if (shouldFilterBySid) {
+      return this.http.get<ServerList>(this.url).pipe(
+        map((response) => this.filterServerListBySid(response, normalizedSid)),
         catchError(this.handleError)
       );
     }
@@ -31,26 +31,36 @@ export class ServerListService {
     );
   }
 
-  private mapServersBySidResponse(response: ServersBySidResponse, sid: string): ServerList {
-    const serverList = response.serverDTOList ?? [];
-    const totalUsers = serverList.reduce((sum, server) => sum + (server.userCount ?? 0), 0);
-    const lastMapReceived = this.getLatestLastSeen(serverList);
-    const now = new Date().toISOString();
+  private filterServerListBySid(response: ServerList, sidPrefix: string): ServerList {
+    const filteredCountries = response.countriesWithServers
+      .map((country) => {
+        const serverList = (country.serverList ?? []).filter((server) => server.sid?.startsWith(sidPrefix));
+        if (serverList.length === 0) {
+          return null;
+        }
 
-    return {
-      countriesWithServers: [
-        {
-          countryCode: response.numericCountryCode?.toString() ?? sid,
-          countryCodeAlpha2: response.countryCodeAlpha2,
-          countryName: response.countryName ?? `Unknown country: ${sid}`,
+        const totalUsers = serverList.reduce((sum, server) => sum + (server.userCount ?? 0), 0);
+
+        return {
+          ...country,
           totalUsers,
           serverList
-        }
-      ],
+        };
+      })
+      .filter((country): country is NonNullable<typeof country> => country !== null);
+
+    const totalUsers = filteredCountries.reduce((sum, country) => sum + (country.totalUsers ?? 0), 0);
+    const totalServers = filteredCountries.reduce((sum, country) => sum + (country.serverList?.length ?? 0), 0);
+    const lastMapReceived = this.getLatestLastSeen(
+      filteredCountries.flatMap((country) => country.serverList ?? [])
+    );
+
+    return {
+      ...response,
+      countriesWithServers: filteredCountries,
       totalUsers,
-      totalServers: serverList.length,
-      lastMapReceived,
-      now
+      totalServers,
+      lastMapReceived
     };
   }
 

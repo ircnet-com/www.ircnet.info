@@ -213,6 +213,11 @@ export class ServerListComponent implements OnInit, AfterViewInit {
     this.syncUrlWithFilters();
   }
 
+  clearSid() {
+    this.currentSid = null;
+    this.syncUrlWithFilters();
+  }
+
   syncUrlWithFilters() {
     if (this.updatingFromUrl) {
       return;
