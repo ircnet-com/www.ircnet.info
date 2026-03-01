@@ -49,11 +49,11 @@
                         <button
                                 type="button"
                                 class="filter-pill__action"
-                                [ngClass]="{ 'filter-pill__action--active': country }"
+                                [ngClass]="{ 'filter-pill__action--active': country || effectiveSid }"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#countryFilterCollapse"
                                 aria-controls="countryFilterCollapse"
-                                [attr.aria-expanded]="country ? 'true' : 'false'"
+                                [attr.aria-expanded]="(country || effectiveSid) ? 'true' : 'false'"
                                 aria-label="Country filter">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                  class="bi bi-funnel" viewBox="0 0 16 16" aria-hidden="true">
@@ -79,6 +79,26 @@
                     </option>
                 </select>
             </div>
+
+<!--            <div class="mt-2">
+                <label for="sidFilter" class="text-muted small fw-semibold mb-1">SID</label>
+                <div class="input-group input-group-sm">
+                    <input
+                            id="sidFilter"
+                            type="text"
+                            class="form-control"
+                            placeholder="e.g. 276"
+                            [(ngModel)]="currentSid"
+                            (ngModelChange)="syncUrlWithFilters()">
+                    <button
+                            class="btn btn-outline-secondary"
+                            type="button"
+                            (click)="currentSid = null; syncUrlWithFilters()"
+                            [disabled]="!currentSid">
+                        Clear
+                    </button>
+                </div>
+            </div>-->
         </div>
     </div>
 

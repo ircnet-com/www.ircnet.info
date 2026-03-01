@@ -8,7 +8,7 @@ export interface ServerList {
 
 export interface CountryWithServers {
   countryCode: string;
-  countryCodeAlpha2: string;
+  countryCodeAlpha2?: string;
   countryName: string;
   totalUsers: number;
   serverList: ServerEntry[];
@@ -31,4 +31,5 @@ export interface ServersBySidResponse {
   serverDTOList: ServerEntry[];
   numericCountryCode: number | null;
   countryName: string | null;
+  countryCodeAlpha2?: string;
 }

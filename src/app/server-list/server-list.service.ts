@@ -41,6 +41,7 @@ export class ServerListService {
       countriesWithServers: [
         {
           countryCode: response.numericCountryCode?.toString() ?? sid,
+          countryCodeAlpha2: response.countryCodeAlpha2,
           countryName: response.countryName ?? `Unknown country: ${sid}`,
           totalUsers,
           serverList

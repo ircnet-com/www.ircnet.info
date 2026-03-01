@@ -24,6 +24,7 @@ export class ServerListComponent implements OnInit, AfterViewInit {
   data: any;
   errorMessage: string = "";
   embed: boolean = false;
+  currentSid: string | null = null;
 
   flatView: boolean = false;
 
@@ -31,6 +32,7 @@ export class ServerListComponent implements OnInit, AfterViewInit {
   country: string | null = null;
 
   private updatingFromUrl: boolean = false;
+  private lastLoadedSid: string | null = null;
 
   @ViewChild('modeScroll', { static: false })
   modeScroll?: ElementRef<HTMLElement>;
@@ -133,15 +135,13 @@ export class ServerListComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.data = this.serverListService.getServerList().subscribe({
-      next: data => {
-        this.data = data;
-      },
-      error: err => this.errorMessage = err
-    });
-
     this.route.queryParams.subscribe(params => {
       this.embed = params["embed"] === 'true';
+
+      const sidRaw = params['sid'];
+      const sidRawString = typeof sidRaw === 'string' ? sidRaw.trim() : '';
+      const sidValue = sidRawString.length > 0 ? sidRawString : null;
+      const effectiveSid = this.getEffectiveSid(sidValue);
 
       const openEnabled = this.isTruthyQueryParam(params, 'open');
 
@@ -165,9 +165,16 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       } else {
         this.mode = 'ALL';
       }
+      const shouldReload = !this.data || effectiveSid !== this.lastLoadedSid;
+
       this.flatView = flatEnabled;
       this.country = countryValue;
+      this.currentSid = sidValue;
       this.updatingFromUrl = false;
+
+      if (shouldReload) {
+        this.loadServerList(effectiveSid);
+      }
 
       // make sure active segment is visible on narrow screens
       this.queueScrollCheckedModeIntoView();
@@ -177,6 +184,16 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       if (bothPresent) {
         this.syncUrlWithFilters();
       }
+    });
+  }
+
+  private loadServerList(sid: string | null) {
+    this.lastLoadedSid = sid;
+    this.serverListService.getServerList(sid).subscribe({
+      next: data => {
+        this.data = data;
+      },
+      error: err => this.errorMessage = err
     });
   }
 
@@ -201,7 +218,11 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    const effectiveSid = this.getEffectiveSid(this.currentSid);
+    const shouldReload = effectiveSid !== this.lastLoadedSid;
+
     const queryParams: any = {
+      sid: effectiveSid ? effectiveSid : null,
       sasl: this.mode === 'SASL' ? 'true' : null,
       open: this.mode === 'OPEN' ? 'true' : null,
       flat: this.flatView ? 'true' : null,
@@ -218,6 +239,19 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+
+    if (shouldReload) {
+      this.loadServerList(effectiveSid);
+    }
+  }
+
+  get effectiveSid(): string | null {
+    return this.getEffectiveSid(this.currentSid);
+  }
+
+  private getEffectiveSid(value: string | null): string | null {
+    const trimmed = value?.trim() ?? '';
+    return trimmed.length >= 3 ? trimmed : null;
   }
 
   private isTruthyQueryParam(params: any, key: string): boolean {
