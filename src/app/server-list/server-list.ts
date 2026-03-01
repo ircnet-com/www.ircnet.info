@@ -8,6 +8,7 @@ export interface ServerList {
 
 export interface CountryWithServers {
   countryCode: string;
+  countryCodeAlpha2: string;
   countryName: string;
   totalUsers: number;
   serverList: ServerEntry[];
