@@ -25,3 +25,9 @@ export interface ServerEntry {
 
   [key: string]: unknown;
 }
+
+export interface ServersBySidResponse {
+  serverDTOList: ServerEntry[];
+  numericCountryCode: number | null;
+  countryName: string | null;
+}
