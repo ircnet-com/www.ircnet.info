@@ -130,4 +130,102 @@ describe('ServerListComponent', () => {
     });
   });
 
+  describe('server sorting', () => {
+    const lastMapReceived = '2026-09-12T10:15:03.409+00:00';
+
+    beforeEach(() => {
+      component.data = {
+        countriesWithServers: [
+          {
+            countryCode: '001',
+            countryCodeAlpha2: 'AA',
+            countryName: 'Alpha',
+            serverList: [
+              {serverName: 'small.example.net', lastSeen: lastMapReceived, userCount: 10, open: true, sasl: false},
+              {serverName: 'largest.example.net', lastSeen: lastMapReceived, userCount: 200, open: false, sasl: true}
+            ]
+          },
+          {
+            countryCode: '002',
+            countryCodeAlpha2: 'BB',
+            countryName: 'Beta',
+            serverList: [
+              {serverName: 'middle.example.net', lastSeen: lastMapReceived, userCount: 80, open: true, sasl: true},
+              {serverName: 'stale.example.net', lastSeen: '2026-09-10T21:08:08.945+00:00', userCount: 999, open: true, sasl: true}
+            ]
+          }
+        ],
+        lastMapReceived,
+        now: '2026-09-12T10:15:05.427+00:00'
+      };
+      component.country = null;
+      component.mode = 'ALL';
+    });
+
+    it('keeps backend order in DEFAULT mode, including stale rows', () => {
+      component.sortMode = 'DEFAULT';
+
+      expect(component.displayedFlatServers.map(server => server.serverName)).toEqual([
+        'small.example.net',
+        'largest.example.net',
+        'middle.example.net',
+        'stale.example.net'
+      ]);
+    });
+
+    it('sorts linked servers by users descending and excludes stale servers', () => {
+      component.sortMode = 'USERS_DESC';
+
+      expect(component.displayedFlatServers.map(server => server.serverName)).toEqual([
+        'largest.example.net',
+        'middle.example.net',
+        'small.example.net'
+      ]);
+    });
+
+    it('sorts linked servers by users ascending', () => {
+      component.sortMode = 'USERS_ASC';
+
+      expect(component.displayedFlatServers.map(server => server.serverName)).toEqual([
+        'small.example.net',
+        'middle.example.net',
+        'largest.example.net'
+      ]);
+    });
+
+    it('keeps the OPEN filter when sorting', () => {
+      component.mode = 'OPEN';
+      component.sortMode = 'USERS_DESC';
+
+      expect(component.displayedFlatServers.map(server => server.serverName)).toEqual([
+        'middle.example.net',
+        'small.example.net'
+      ]);
+    });
+
+    it('keeps the SASL filter when sorting', () => {
+      component.mode = 'SASL';
+      component.sortMode = 'USERS_DESC';
+
+      expect(component.displayedFlatServers.map(server => server.serverName)).toEqual([
+        'largest.example.net',
+        'middle.example.net'
+      ]);
+    });
+
+    it('keeps backend order when user counts are equal', () => {
+      component.data.countriesWithServers[0].serverList.push(
+        {serverName: 'z-tie.example.net', lastSeen: lastMapReceived, userCount: 80, open: true, sasl: true}
+      );
+      component.sortMode = 'USERS_DESC';
+
+      expect(component.displayedFlatServers.map(server => server.serverName)).toEqual([
+        'largest.example.net',
+        'z-tie.example.net',
+        'middle.example.net',
+        'small.example.net'
+      ]);
+    });
+  });
+
 });

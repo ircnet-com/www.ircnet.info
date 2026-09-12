@@ -5,6 +5,8 @@ import {NgClass, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 
+type ServerSort = 'DEFAULT' | 'USERS_DESC' | 'USERS_ASC';
+
 @Component({
   selector: 'app-server-list',
   standalone: true,
@@ -27,6 +29,7 @@ export class ServerListComponent implements OnInit, AfterViewInit {
   currentSid: string | null = null;
 
   flatView: boolean = false;
+  sortMode: ServerSort = 'DEFAULT';
 
   mode: 'ALL' | 'OPEN' | 'SASL' = 'ALL';
   country: string | null = null;
@@ -54,6 +57,44 @@ export class ServerListComponent implements OnInit, AfterViewInit {
 
   get linkedFlatServers(): any[] {
     return this.flatServers.filter((server: any) => this.isServerLinked(server));
+  }
+
+  get isSortActive(): boolean {
+    return this.sortMode !== 'DEFAULT';
+  }
+
+  get isUsersSort(): boolean {
+    return this.sortMode === 'USERS_DESC' || this.sortMode === 'USERS_ASC';
+  }
+
+  get sortDescription(): string {
+    switch (this.sortMode) {
+      case 'USERS_DESC':
+        return 'Linked servers sorted by user count, highest first.';
+      case 'USERS_ASC':
+        return 'Linked servers sorted by user count, lowest first.';
+      default:
+        return '';
+    }
+  }
+
+  get displayedFlatServers(): any[] {
+    if (!this.isSortActive) {
+      return this.flatServers;
+    }
+
+    const servers = [...this.linkedFlatServers];
+
+    return servers.sort((a: any, b: any) => {
+      switch (this.sortMode) {
+        case 'USERS_DESC':
+          return Number(b?.userCount ?? 0) - Number(a?.userCount ?? 0);
+        case 'USERS_ASC':
+          return Number(a?.userCount ?? 0) - Number(b?.userCount ?? 0);
+        default:
+          return 0;
+      }
+    });
   }
 
   get displayedTotalUsers(): number {
@@ -103,6 +144,11 @@ export class ServerListComponent implements OnInit, AfterViewInit {
 
     if (this.flatView) {
       qp.flat = 'true';
+    }
+
+    const sortQuery = this.getSortQueryValue(this.sortMode);
+    if (sortQuery) {
+      qp.sort = sortQuery;
     }
 
     if (this.embed) {
@@ -173,6 +219,14 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       const flatPresent = Object.prototype.hasOwnProperty.call(params, 'flat');
       const flatEnabled = this.isTruthyQueryParam(params, 'flat');
 
+      const topPresent = Object.prototype.hasOwnProperty.call(params, 'top');
+      const topEnabled = this.isTruthyQueryParam(params, 'top');
+
+      const sortPresent = Object.prototype.hasOwnProperty.call(params, 'sort');
+      const sortRaw = sortPresent ? String(params['sort'] ?? '').trim().toLowerCase() : '';
+      const requestedSort = this.getSortMode(params['sort']);
+      const sortValue: ServerSort = requestedSort === 'DEFAULT' && topEnabled ? 'USERS_DESC' : requestedSort;
+
       const countryPresent = Object.prototype.hasOwnProperty.call(params, 'country');
       const countryRaw = countryPresent ? params['country'] : undefined;
       const countryRawString = countryPresent ? String(countryRaw ?? '').trim() : '';
@@ -190,6 +244,7 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       const shouldReload = !this.data || effectiveSid !== this.lastLoadedSid;
 
       this.flatView = flatEnabled;
+      this.sortMode = sortValue;
       this.country = countryValue;
       this.currentSid = sidValue;
       this.updatingFromUrl = false;
@@ -203,7 +258,9 @@ export class ServerListComponent implements OnInit, AfterViewInit {
 
       // Canonicalization (keep your old behavior; shortened here)
       const bothPresent = saslEnabled && openEnabled;
-      if (bothPresent) {
+      const canonicalSort = this.getSortQueryValue(this.sortMode) ?? '';
+      const sortNeedsCanonicalization = topPresent || (sortPresent && sortRaw !== canonicalSort);
+      if (bothPresent || sortNeedsCanonicalization) {
         this.syncUrlWithFilters();
       }
     });
@@ -224,8 +281,13 @@ export class ServerListComponent implements OnInit, AfterViewInit {
     this.queueScrollCheckedModeIntoView();
   }
 
+  onSortChanged(_: any) {
+    this.syncUrlWithFilters();
+  }
+
   resetFilters() {
     this.mode = 'ALL';
+    this.sortMode = 'DEFAULT';
     this.syncUrlWithFilters();
     this.queueScrollCheckedModeIntoView();
   }
@@ -253,6 +315,8 @@ export class ServerListComponent implements OnInit, AfterViewInit {
       sasl: this.mode === 'SASL' ? 'true' : null,
       open: this.mode === 'OPEN' ? 'true' : null,
       flat: this.flatView ? 'true' : null,
+      sort: this.getSortQueryValue(this.sortMode),
+      top: null,
       country: this.country ? this.country : null,
 
       nocountry: null,
@@ -279,6 +343,28 @@ export class ServerListComponent implements OnInit, AfterViewInit {
   private getEffectiveSid(value: string | null): string | null {
     const trimmed = value?.trim() ?? '';
     return trimmed.length >= 3 ? trimmed : null;
+  }
+
+  private getSortMode(value: any): ServerSort {
+    switch (String(value ?? '').trim().toLowerCase()) {
+      case 'users-desc':
+        return 'USERS_DESC';
+      case 'users-asc':
+        return 'USERS_ASC';
+      default:
+        return 'DEFAULT';
+    }
+  }
+
+  private getSortQueryValue(sortMode: ServerSort): string | null {
+    switch (sortMode) {
+      case 'USERS_DESC':
+        return 'users-desc';
+      case 'USERS_ASC':
+        return 'users-asc';
+      default:
+        return null;
+    }
   }
 
   private isTruthyQueryParam(params: any, key: string): boolean {

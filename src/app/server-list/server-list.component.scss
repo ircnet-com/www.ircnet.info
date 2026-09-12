@@ -298,3 +298,14 @@
     scroll-padding-right: 40px;
   }
 }
+
+.sort-rank-col {
+  width: 3.5rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sort-list-heading {
+  display: flex;
+  flex-direction: column;
+}

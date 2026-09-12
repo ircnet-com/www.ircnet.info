@@ -49,12 +49,12 @@
                         <button
                                 type="button"
                                 class="filter-pill__action"
-                                [ngClass]="{ 'filter-pill__action--active': country || effectiveSid }"
+                                [ngClass]="{ 'filter-pill__action--active': country || effectiveSid || isSortActive }"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#countryFilterCollapse"
                                 aria-controls="countryFilterCollapse"
-                                [attr.aria-expanded]="(country || effectiveSid) ? 'true' : 'false'"
-                                aria-label="Country filter">
+                                [attr.aria-expanded]="(country || effectiveSid || isSortActive) ? 'true' : 'false'"
+                                aria-label="Filter and sort options">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                  class="bi bi-funnel" viewBox="0 0 16 16" aria-hidden="true">
                                 <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .39.812L10 7.5V13a.5.5 0 0 1-.724.447l-2-1A.5.5 0 0 1 7 12V7.5L1.61 1.812A.5.5 0 0 1 1.5 1.5"/>
@@ -64,9 +64,25 @@
                 </div>
             </div>
 
-            <div class="collapse country-collapse mt-2" id="countryFilterCollapse" [ngClass]="{ 'show': country || effectiveSid }">
+            <div class="collapse country-collapse mt-2" id="countryFilterCollapse" [ngClass]="{ 'show': country || effectiveSid || isSortActive }">
+                <div class="filter-option">
+                    <label for="serverSort" class="text-muted small fw-semibold mb-1">Sort</label>
+                    <select
+                            id="serverSort"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="sortMode"
+                            (ngModelChange)="onSortChanged($event)">
+                        <option [ngValue]="'DEFAULT'">Default (Country / SID)</option>
+                        <option [ngValue]="'USERS_DESC'">Users: high to low</option>
+                        <option [ngValue]="'USERS_ASC'">Users: low to high</option>
+                    </select>
+                    <div class="text-muted small mt-1" *ngIf="isSortActive">
+                        Sorted views are flat and contain linked servers only.
+                    </div>
+                </div>
+
                 <ng-container *ngIf="!effectiveSid">
-                    <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1">Country</label>
+                    <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1 mt-2">Country</label>
                     <select
                             id="countryFilterMobile"
                             class="form-select form-select-sm"
@@ -115,7 +131,7 @@
         </div>
     </div>
 
-    <ng-container *ngIf="!flatView && !effectiveSid; else flat_content">
+    <ng-container *ngIf="!flatView && !isSortActive && !effectiveSid; else flat_content">
         <div *ngFor="let country of filteredCountries; let i = index">
             <br *ngIf="i != 0">
             <h2 [attr.id]="getCountryAnchor(country)">
@@ -165,24 +181,36 @@
     </ng-container>
 
     <ng-template #flat_content>
-        <p *ngIf="effectiveSid">Total users: {{ displayedTotalUsers }}</p>
+        <div *ngIf="isSortActive" class="sort-list-heading mb-3">
+            <h2 class="h4 mb-1">Servers</h2>
+            <div class="text-muted small">{{ sortDescription }}</div>
+        </div>
+        <p *ngIf="effectiveSid && !isSortActive">Total users: {{ displayedTotalUsers }}</p>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead class="table-bordered">
                 <tr>
+                    <th *ngIf="isUsersSort" scope="col" class="sort-rank-col">#</th>
                     <th scope="col" style="width: 20%;">Name</th>
                     <th scope="col" style="width: 25%;">Description</th>
                     <th scope="col" style="width: 14%;">Country</th>
-                    <th scope="col">Users</th>
+                    <th scope="col">Users<span *ngIf="sortMode === 'USERS_ASC'" aria-label=" sorted ascending"> &uarr;</span><span *ngIf="sortMode === 'USERS_DESC'" aria-label=" sorted descending"> &darr;</span></th>
                     <th scope="col">SID</th>
                     <th scope="col">Version</th>
                     <th>Last seen</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let server of flatServers"
+                <tr *ngFor="let server of displayedFlatServers; let rank = index"
                     [ngClass]="{ 'table-danger': server.lastSeen != data.lastMapReceived }">
-                    <td>{{ server.serverName }}</td>
+                    <td *ngIf="isUsersSort" class="sort-rank-col fw-semibold">{{ rank + 1 }}</td>
+                    <td>
+                        {{ server.serverName }}
+                        <span class="server-badges" *ngIf="mode === 'ALL'">
+                            <span *ngIf="server.open" class="chip chip--open">OPEN</span>
+                            <span *ngIf="server.sasl" class="chip chip--sasl">SASL</span>
+                        </span>
+                    </td>
                     <td>{{ server.serverInfo | correctServerDescriptionEncoding }}</td>
                     <td>{{ server.countryName }}</td>
                     <td>{{ server.userCount }}</td>
