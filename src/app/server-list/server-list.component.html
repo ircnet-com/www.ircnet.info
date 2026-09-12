@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <div class="collapse country-collapse mt-2" id="countryFilterCollapse" [ngClass]="{ 'show': country || effectiveSid || isSortActive }">
+            <div class="collapse country-collapse mt-2 pb-2" id="countryFilterCollapse" [ngClass]="{ 'show': country || effectiveSid || isSortActive }">
                 <ng-container *ngIf="!effectiveSid">
                     <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1">Country</label>
                     <select
