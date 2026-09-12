@@ -65,24 +65,8 @@
             </div>
 
             <div class="collapse country-collapse mt-2" id="countryFilterCollapse" [ngClass]="{ 'show': country || effectiveSid || isSortActive }">
-                <div class="filter-option">
-                    <label for="serverSort" class="text-muted small fw-semibold mb-1">Sort</label>
-                    <select
-                            id="serverSort"
-                            class="form-select form-select-sm"
-                            [(ngModel)]="sortMode"
-                            (ngModelChange)="onSortChanged($event)">
-                        <option [ngValue]="'DEFAULT'">Default (Country / SID)</option>
-                        <option [ngValue]="'USERS_DESC'">Users: high to low</option>
-                        <option [ngValue]="'USERS_ASC'">Users: low to high</option>
-                    </select>
-                    <div class="text-muted small mt-1" *ngIf="isSortActive">
-                        Sorted views are flat and contain linked servers only.
-                    </div>
-                </div>
-
                 <ng-container *ngIf="!effectiveSid">
-                    <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1 mt-2">Country</label>
+                    <label for="countryFilterMobile" class="text-muted small fw-semibold mb-1">Country</label>
                     <select
                             id="countryFilterMobile"
                             class="form-select form-select-sm"
@@ -96,6 +80,19 @@
                         </option>
                     </select>
                 </ng-container>
+
+                <div class="filter-option mt-2">
+                    <label for="serverSort" class="text-muted small fw-semibold mb-1">Sort</label>
+                    <select
+                            id="serverSort"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="sortMode"
+                            (ngModelChange)="onSortChanged($event)">
+                        <option [ngValue]="'DEFAULT'">Default (Country / SID)</option>
+                        <option [ngValue]="'USERS_DESC'">Users: high to low</option>
+                        <option [ngValue]="'USERS_ASC'">Users: low to high</option>
+                    </select>
+                </div>
 
                 <div class="mt-2" *ngIf="effectiveSid">
                     <span class="badge text-bg-primary sid-filter-badge">
