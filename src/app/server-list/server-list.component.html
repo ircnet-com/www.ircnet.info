@@ -181,7 +181,7 @@
     </ng-container>
 
     <ng-template #flat_content>
-        <div *ngIf="isSortActive" class="sort-list-heading mb-3">
+        <div *ngIf="isSortActive" class="d-flex flex-column mb-3">
             <h2 class="h4 mb-1">Servers</h2>
             <div class="text-muted small">{{ sortDescription }}</div>
         </div>
@@ -190,7 +190,7 @@
             <table class="table table-striped">
                 <thead class="table-bordered">
                 <tr>
-                    <th *ngIf="isUsersSort" scope="col" class="sort-rank-col">#</th>
+                    <th *ngIf="isUsersSort" scope="col" class="text-end text-nowrap" style="width: 3.5rem;">#</th>
                     <th scope="col" style="width: 20%;">Name</th>
                     <th scope="col" style="width: 25%;">Description</th>
                     <th scope="col" style="width: 14%;">Country</th>
@@ -203,7 +203,7 @@
                 <tbody>
                 <tr *ngFor="let server of displayedFlatServers; let rank = index"
                     [ngClass]="{ 'table-danger': server.lastSeen != data.lastMapReceived }">
-                    <td *ngIf="isUsersSort" class="sort-rank-col fw-semibold">{{ rank + 1 }}</td>
+                    <td *ngIf="isUsersSort" class="text-end text-nowrap fw-semibold" style="width: 3.5rem;">{{ rank + 1 }}</td>
                     <td>
                         {{ server.serverName }}
                         <span class="server-badges" *ngIf="mode === 'ALL'">
