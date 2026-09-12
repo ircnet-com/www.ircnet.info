@@ -52,12 +52,16 @@ export class ServerListComponent implements OnInit, AfterViewInit {
     return servers;
   }
 
+  get linkedFlatServers(): any[] {
+    return this.flatServers.filter((server: any) => this.isServerLinked(server));
+  }
+
   get displayedTotalUsers(): number {
-    return this.flatServers.reduce((sum, server) => sum + (server?.userCount ?? 0), 0);
+    return this.linkedFlatServers.reduce((sum, server) => sum + (server?.userCount ?? 0), 0);
   }
 
   get displayedTotalServers(): number {
-    return this.flatServers.length;
+    return this.linkedFlatServers.length;
   }
 
   get isUnfilteredAllView(): boolean {
@@ -119,7 +123,13 @@ export class ServerListComponent implements OnInit, AfterViewInit {
   }
 
   getDisplayedCountryUsers(country: any): number {
-    return (country?.serverList ?? []).reduce((sum: number, server: any) => sum + (server?.userCount ?? 0), 0);
+    return (country?.serverList ?? [])
+      .filter((server: any) => this.isServerLinked(server))
+      .reduce((sum: number, server: any) => sum + (server?.userCount ?? 0), 0);
+  }
+
+  private isServerLinked(server: any): boolean {
+    return !!this.data?.lastMapReceived && server?.lastSeen === this.data.lastMapReceived;
   }
 
   constructor(
